@@ -1,8 +1,14 @@
 import * as dgram from 'dgram';
+import { Dnsquestion } from './models/dns_question';
 
 const dnsClient = dgram.createSocket('udp4');
 
-const dnsQueryPacket = new Uint8Array(12);
+let question = new Dnsquestion();
+question.name="ttr.in";
+
+const q_byte_array=question.encode();
+
+const dnsQueryPacket = new Uint8Array(12+q_byte_array.length);
 // Set the Packet Identifier (ID) to 1234 (0x04D2)
 dnsQueryPacket[0] = 0x04; // High byte
 dnsQueryPacket[1] = 0xD2; // Low byte
@@ -14,10 +20,16 @@ dnsQueryPacket[2] = 0x00;
 dnsQueryPacket[3] = 0x00;
 
 // Set QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT to 0
-dnsQueryPacket[4] = 0x00; dnsQueryPacket[5] = 0x00;
+dnsQueryPacket[4] = 0x00; dnsQueryPacket[5] = 0x01;
 dnsQueryPacket[6] = 0x00; dnsQueryPacket[7] = 0x00;
 dnsQueryPacket[8] = 0x00; dnsQueryPacket[9] = 0x00;
 dnsQueryPacket[10] = 0x00; dnsQueryPacket[11] = 0x00;
+
+for(let i=0;i<q_byte_array.length;i++){
+    dnsQueryPacket[i+12]=q_byte_array[i];
+}
+
+console.log("dnsQueryPacket",dnsQueryPacket);
 
 // Send the query packet to the server
 dnsClient.send(dnsQueryPacket, 2053, '127.0.0.1', (err) => {
