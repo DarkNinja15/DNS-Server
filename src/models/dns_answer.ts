@@ -1,16 +1,16 @@
-export class Dnsanswer{
-    name!:string;
-    type!:number;
-    class!:number;
-    ttl!:number;
-    data!:string
+export interface Dnsanswer{
+    domainName:string;
+    type:number;
+    class:number;
+    ttl:number;
+    data:string
 }
 
 export function writeAnswers(answers:Dnsanswer[]):Buffer{
     return Buffer.concat(answers.map((a)=>{
         const buffer=Buffer.alloc(10);
 
-        const s=a.name.split('.').map((e)=>`${String.fromCharCode(e.length)}${e}`).join('');
+        const s=a.domainName.split('.').map((e)=>`${String.fromCharCode(e.length)}${e}`).join('');
 
         buffer.writeInt16BE(a.type);
         buffer.writeInt16BE(a.class,2);

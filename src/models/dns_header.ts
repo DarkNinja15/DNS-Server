@@ -1,72 +1,54 @@
-export class Dnsheader{
-    packet_id!: number;
-    query_response_indicator!: boolean;
-    opcode!: number;
-    authoritative_answer!: boolean;
-    truncation!: boolean;
-    recursion_desired!: boolean;
-    recursion_available!: boolean;
-    reserved!: number;
-    response_code!: number;
-    question_count!: number;
-    answer_record_count!: number;
-    authority_record_count!: number;
-    additional_record_count!: number;
+export interface  Dnsheader{
+    packet_id: number;
+    query_response_indicator: boolean;
+    opcode: number;
+    authoritative_answer: boolean;
+    truncation: boolean;
+    recursion_desired: boolean;
+    recursion_available: boolean;
+    reserved: number;
+    response_code: number;
+    question_count: number;
+    answer_record_count: number;
+    authority_record_count: number;
+    additional_record_count: number;
+}
 
-    encode():Uint8Array{
-        const byteArray=new Uint8Array(12);
-        let low_byte=this.packet_id & 0xff;
-        let high_byte=(this.packet_id >> 8) & 0xff;
+export function decodeHeader(buffer:Buffer):Dnsheader{
+    let packet_id=buffer.readInt16BE(0);
+    let flags=buffer.readInt16BE(2);
 
-        byteArray[0]=low_byte;
-        byteArray[1]=high_byte;
+    // flag = 0000 0001 1000 0000
+    // flag = 0 0000 0 0 1 1 000 0000
 
-        let byte=0;
-        if(this.query_response_indicator){
-            byte |= 0b10000000;
-        }
-        byte |= (this.opcode << 3);
-        if(this.authoritative_answer)
-            byte |= 0b00000100;
-        if(this.truncation)
-            byte |= 0b00000010;
-        if(this.recursion_desired)
-            byte |= 0b00000001;
+    let query_response_indicator=!!(flags & 0x8000);
+    let opcode=((flags<<11) & 0x0f);
+    let authoritative_answer=!!(flags & 0x0400);
+    let truncation=!!(flags & 0x0200);
+    let recursion_desired=!!(flags & 0x0100);
+    let recursion_available=!!(flags & 0x0080);
+    let reserved=((flags>>4) & 0x07);
+    let response_code=(flags & 0x0f);
 
-        byteArray[2]=byte;
+    let question_count=buffer.readInt16BE(4);
+    let answer_record_count=buffer.readInt16BE(6);
+    let authority_record_count=buffer.readInt16BE(8);
+    let additional_record_count=buffer.readInt16BE(10);
 
-        byte=0;
-        if(this.recursion_available)
-            byte |= 0b10000000;
-        byte |= (this.reserved << 4);
-        byte |= this.response_code;
 
-        byteArray[3]=byte;
-
-        low_byte=this.question_count & 0xff;
-        high_byte=(this.question_count >> 8) & 0xff;
-
-        byteArray[4]=low_byte;
-        byteArray[5]=high_byte;
-
-        low_byte=this.answer_record_count & 0xff;
-        high_byte=(this.answer_record_count >> 8) & 0xff;
-
-        byteArray[6]=low_byte;
-        byteArray[7]=high_byte;
-
-        low_byte=this.authority_record_count & 0xff;
-        high_byte=(this.authority_record_count >> 8) & 0xff;
-
-        byteArray[8]=low_byte;
-        byteArray[9]=high_byte;
-
-        low_byte=this.additional_record_count & 0xff;
-        high_byte=(this.additional_record_count >> 8) & 0xff;
-
-        byteArray[8]=low_byte;
-        byteArray[9]=high_byte;
-
-        return byteArray;
-    }
+    return {
+        packet_id,
+        query_response_indicator,
+        opcode,
+        authoritative_answer,
+        truncation,
+        recursion_desired,
+        recursion_available,
+        reserved,
+        response_code,
+        question_count,
+        answer_record_count,
+        authority_record_count,
+        additional_record_count
+    };
 }

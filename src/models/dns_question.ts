@@ -1,12 +1,12 @@
-export type Dnsquestion = {
-    name:string;
+export interface Dnsquestion{
+    domainName:string;
     type:number;
     class:number;
 }
 
 export function encode(question:Dnsquestion):Uint8Array{
     let n=4;
-    let domains = question.name.split(".");
+    let domains = question.domainName.split(".");
     domains.forEach((d)=>n+=(d.length+1));
     const byteArray=new Uint8Array(n+1); // +1 for the 0 terminating character
     
@@ -41,7 +41,7 @@ export function encode(question:Dnsquestion):Uint8Array{
 export function writeQuestions(questions: Dnsquestion[]):Buffer{
     return Buffer.concat(questions.map((q)=>{
         const typeandclass=Buffer.alloc(4);
-        const s=q.name.split('.').map((e)=>`${String.fromCharCode(e.length)}${e}`).join('');
+        const s=q.domainName.split('.').map((e)=>`${String.fromCharCode(e.length)}${e}`).join('');
         typeandclass.writeInt16BE(q.type);
         typeandclass.writeInt16BE(q.class,2);
         return Buffer.concat([Buffer.from(s+'\0','binary'),typeandclass]);
