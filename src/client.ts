@@ -1,12 +1,15 @@
 import * as dgram from 'dgram';
-import { Dnsquestion } from './models/dns_question';
+import { Dnsquestion, encode } from './models/dns_question';
 
 const dnsClient = dgram.createSocket('udp4');
 
-let question = new Dnsquestion();
-question.name="ttr.in";
+let question:Dnsquestion = {
+    name:"google.com",
+    class:1,
+    type:1
+};
 
-const q_byte_array=question.encode();
+const q_byte_array=encode(question);
 
 const dnsQueryPacket = new Uint8Array(12+q_byte_array.length);
 // Set the Packet Identifier (ID) to 1234 (0x04D2)
