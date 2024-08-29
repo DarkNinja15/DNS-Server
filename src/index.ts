@@ -1,6 +1,6 @@
 import * as dgram from "dgram";
 import {decodeHeader, Dnsheader} from './models/dns_header';
-import { Dnsquestion, writeQuestions } from "./models/dns_question";
+import { decodeQuestion, Dnsquestion, writeQuestions } from "./models/dns_question";
 import {Dnsanswer, writeAnswers} from "./models/dns_answer";
 
 
@@ -13,7 +13,14 @@ udpSocket.on("message", (data: Buffer, remoteAddr: dgram.RemoteInfo) => {
     try {
         console.log(`Received data from ${remoteAddr.address}:${remoteAddr.port}`);
         console.log(data);
-        console.log(decodeHeader(data));
+
+        const headBuff = data.subarray(0,12);
+        
+        console.log(decodeHeader(headBuff));
+
+        const questionBuff= data.subarray(12,data.length);
+        console.log(decodeQuestion(questionBuff));
+
         
         const response=Buffer.from('');
 
