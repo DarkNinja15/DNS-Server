@@ -65,7 +65,7 @@ const header: Dnsheader = {
 
 // Create a DNS question for a specific domain
 const question: Dnsquestion = {
-    domainName: 'example.com',
+    domainName: 'google.com',
     type: 1, // Type A (host address)
     question_class: 1 // Class IN (Internet)
 };
@@ -82,5 +82,14 @@ client.send(packet, DNS_SERVER_PORT, DNS_SERVER_ADDRESS, (err) => {
     } else {
         console.log('DNS packet sent successfully');
     }
-    client.close();
 });
+
+client.on('message', (msg) => {
+    try {
+        console.log(msg);
+    } catch (error) {
+      console.error('Error decoding response:', error);
+    } finally {
+      client.close();
+    }
+}); 
